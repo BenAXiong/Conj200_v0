@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Conjugateur FR — Présent</title>
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --card:#111318;
+      --card2:#0f1116;
+      --text:#e8eaf0;
+      --muted:#a9afbf;
+      --stroke:#232633;
+      --stroke2:#2f3344;
+      --accent:#7aa2ff;
+      --accent2:#9bffd1;
+      --danger:#ff7a7a;
+      --radius:14px;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 600px at 40% -10%, rgba(122,162,255,.18), transparent 55%),
+                  radial-gradient(900px 500px at 100% 0%, rgba(155,255,209,.12), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      padding:18px;
+    }
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .title{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      margin: 2px 0 14px;
+    }
+    .title h1{
+      font-size: 18px;
+      margin:0;
+      font-weight: 750;
+      letter-spacing: .2px;
+    }
+    .title .pill{
+      font-size: 12px;
+      padding: 4px 10px;
+      border:1px solid var(--stroke2);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,.03);
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .topbar{
+      padding: 12px;
+      border-bottom:1px solid var(--stroke);
+      background: rgba(255,255,255,.02);
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .tab{
+      appearance:none;
+      border:1px solid var(--stroke2);
+      background: rgba(255,255,255,.02);
+      color: var(--muted);
+      padding: 8px 10px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-size: 12px;
+      font-weight: 650;
+      transition: transform .05s ease, border-color .15s ease, color .15s ease, background .15s ease;
+      user-select:none;
+    }
+    .tab:hover{ border-color: rgba(122,162,255,.55); color: var(--text); }
+    .tab:active{ transform: translateY(1px); }
+    .tab.active{
+      color: var(--text);
+      border-color: rgba(122,162,255,.75);
+      background: rgba(122,162,255,.10);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1.3fr;
+      gap: 12px;
+      padding: 12px;
+    }
+    @media (max-width: 760px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .panel{
+      background: rgba(255,255,255,.02);
+      border:1px solid var(--stroke);
+      border-radius: calc(var(--radius) - 4px);
+      padding: 12px;
+    }
+
+    .panel h2{
+      margin:0 0 10px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing:.2px;
+      text-transform: uppercase;
+    }
+
+    .verbs{
+      display:flex;
+      gap: 8px;
+      flex-wrap:wrap;
+    }
+    .verbBtn{
+      appearance:none;
+      border:1px solid var(--stroke2);
+      background: rgba(255,255,255,.02);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor:pointer;
+      font-size: 13px;
+      font-weight: 650;
+      transition: transform .05s ease, border-color .15s ease, background .15s ease;
+    }
+    .verbBtn:hover{ border-color: rgba(155,255,209,.55); }
+    .verbBtn:active{ transform: translateY(1px); }
+    .verbBtn.active{
+      border-color: rgba(155,255,209,.8);
+      background: rgba(155,255,209,.10);
+    }
+
+    .conjHeader{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .verbName{
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing:.2px;
+    }
+    .meta{
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      overflow:hidden;
+      border-radius: 12px;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.12);
+    }
+    td{
+      padding: 10px 10px;
+      border-bottom:1px solid var(--stroke);
+      vertical-align:top;
+      font-size: 13px;
+    }
+    tr:last-child td{ border-bottom:none; }
+    td:first-child{
+      width: 30%;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .hint{
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .smallNote{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .smallNote code{
+      font-family: var(--mono);
+      background: rgba(255,255,255,.05);
+      padding: 2px 6px;
+      border-radius: 8px;
+      border:1px solid var(--stroke);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <h1>Conjugateur FR</h1>
+      <div class="pill">Présent de l’indicatif</div>
+    </div>
+
+    <div class="card">
+      <div class="topbar" id="tabs"></div>
+
+      <div class="grid">
+        <div class="panel">
+          <h2>Verbes</h2>
+          <div class="verbs" id="verbs"></div>
+          <div class="smallNote">
+            Astuce: ajoute/édite les verbes dans <code>DATA</code> en bas du fichier.
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="conjHeader">
+            <div class="verbName" id="verbName">—</div>
+            <div class="meta" id="verbMeta"></div>
+          </div>
+
+          <div id="output">
+            <div class="hint">Choisis une catégorie puis clique un verbe pour afficher la conjugaison.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/**
+ * DATA model:
+ * - Each category has 3 verbs as requested
+ * - Regular verbs are generated (ER, IR, IR* type -ir like finir, RE)
+ * - Irregular verbs are stored explicitly
+ */
+const DATA = {
+  " -er ": {
+    type: "regular_er",
+    verbs: ["parler", "aimer", "travailler"]
+  },
+  " -ir ": {
+    type: "regular_ir_sans_iss", // like dormir, partir (many are not purely regular; we keep a safe set)
+    verbs: ["dormir", "partir", "servir"]
+  },
+  " -ir* ": {
+    type: "regular_ir_iss", // like finir -> finissons
+    verbs: ["finir", "choisir", "grandir"]
+  },
+  " -re ": {
+    type: "regular_re",
+    verbs: ["vendre", "attendre", "répondre"]
+  },
+  " irréguliers ": {
+    type: "irregular",
+    verbs: ["être", "avoir", "aller"]
+  }
+};
+
+const PRONOUNS = [
+  { p: "je",   key: "je" },
+  { p: "tu",   key: "tu" },
+  { p: "il/elle/on", key: "il" },
+  { p: "nous", key: "nous" },
+  { p: "vous", key: "vous" },
+  { p: "ils/elles", key: "ils" }
+];
+
+// Minimal irregular present tense forms
+const IRREGULAR_PRESENT = {
+  "être":  { je:"suis", tu:"es", il:"est", nous:"sommes", vous:"êtes", ils:"sont" },
+  "avoir": { je:"ai", tu:"as", il:"a", nous:"avons", vous:"avez", ils:"ont" },
+  "aller": { je:"vais", tu:"vas", il:"va", nous:"allons", vous:"allez", ils:"vont" }
+};
+
+function startsWithVowelOrMuteH(word){
+  // simplistic check; good enough for our set
+  const w = (word || "").toLowerCase().trim();
+  const vowels = ["a","e","i","o","u","y","à","â","é","è","ê","ë","î","ï","ô","ù","û","ü","œ"];
+  return vowels.includes(w[0]) || w.startsWith("h");
+}
+
+function jeForm(verbForm){
+  // "je" -> "j’" before vowel/mute h
+  if(startsWithVowelOrMuteH(verbForm)) return "j’";
+  return "je";
+}
+
+function buildRegularER(inf){
+  // parler -> parl- + e, es, e, ons, ez, ent
+  const stem = inf.slice(0, -2);
+  return {
+    je: stem + "e",
+    tu: stem + "es",
+    il: stem + "e",
+    nous: stem + "ons",
+    vous: stem + "ez",
+    ils: stem + "ent"
+  };
+}
+
+function buildRegularIR_ISS(inf){
+  // finir -> fin- + is, is, it, issons, issez, issent
+  const stem = inf.slice(0, -2);
+  return {
+    je: stem + "is",
+    tu: stem + "is",
+    il: stem + "it",
+    nous: stem + "issons",
+    vous: stem + "issez",
+    ils: stem + "issent"
+  };
+}
+
+function buildRegularIR_SANS_ISS(inf){
+  // dormir -> dors, dors, dort, dormons, dormez, dorment
+  // This isn't fully general. We'll implement a common pattern:
+  // stemA = infinitive minus -ir (dorm-)
+  // singular uses stemA minus last consonant? Actually "dorm" -> "dor" for singular/plural3.
+  // We'll use a safe rule: remove final "m" or "t" or "v"?? Not reliable.
+  // Instead, we hardcode the three given verbs for correctness.
+  const hard = {
+    "dormir": { je:"dors", tu:"dors", il:"dort", nous:"dormons", vous:"dormez", ils:"dorment" },
+    "partir": { je:"pars", tu:"pars", il:"part", nous:"partons", vous:"partez", ils:"partent" },
+    "servir": { je:"sers", tu:"sers", il:"sert", nous:"servons", vous:"servez", ils:"servent" }
+  };
+  if(hard[inf]) return hard[inf];
+
+  // fallback (best-effort): remove -ir, use "is/is/it/issons/issez/issent"
+  // (better than wrong single-stem guess)
+  return buildRegularIR_ISS(inf);
+}
+
+function buildRegularRE(inf){
+  // vendre -> vend- + s, s, (nothing), ons, ez, ent
+  const stem = inf.slice(0, -2);
+  return {
+    je: stem + "s",
+    tu: stem + "s",
+    il: stem,
+    nous: stem + "ons",
+    vous: stem + "ez",
+    ils: stem + "ent"
+  };
+}
+
+function conjugatePresent(inf, catType){
+  if(catType === "irregular"){
+    return IRREGULAR_PRESENT[inf] || null;
+  }
+  if(catType === "regular_er") return buildRegularER(inf);
+  if(catType === "regular_ir_iss") return buildRegularIR_ISS(inf);
+  if(catType === "regular_ir_sans_iss") return buildRegularIR_SANS_ISS(inf);
+  if(catType === "regular_re") return buildRegularRE(inf);
+  return null;
+}
+
+function renderConjugation(inf, catLabel, catType){
+  const forms = conjugatePresent(inf, catType);
+  const out = document.getElementById("output");
+  const name = document.getElementById("verbName");
+  const meta = document.getElementById("verbMeta");
+
+  name.textContent = inf;
+  meta.textContent = `${catLabel.trim()} · présent`;
+
+  if(!forms){
+    out.innerHTML = `<div class="hint">Pas de données pour <b>${inf}</b>.</div>`;
+    return;
+  }
+
+  const rows = PRONOUNS.map(({p, key}) => {
+    const v = forms[key];
+    const pro = (key === "je") ? jeForm(v) : p;
+    return `<tr><td>${pro}</td><td>${v}</td></tr>`;
+  }).join("");
+
+  out.innerHTML = `
+    <table aria-label="Conjugaison au présent">
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+}
+
+function makeTabs(){
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = "";
+
+  Object.keys(DATA).forEach((label, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "tab";
+    btn.textContent = label;
+    btn.addEventListener("click", () => selectCategory(label));
+    if(idx === 0) btn.classList.add("active");
+    tabs.appendChild(btn);
+  });
+}
+
+let currentCategory = Object.keys(DATA)[0];
+let currentVerb = null;
+
+function setActiveTab(label){
+  document.querySelectorAll(".tab").forEach(t => {
+    t.classList.toggle("active", t.textContent === label);
+  });
+}
+
+function renderVerbButtons(label){
+  const verbsBox = document.getElementById("verbs");
+  verbsBox.innerHTML = "";
+  const verbs = DATA[label].verbs;
+
+  verbs.forEach((v, i) => {
+    const b = document.createElement("button");
+    b.className = "verbBtn";
+    b.textContent = v;
+    b.addEventListener("click", () => selectVerb(label, v));
+    if(i === 0) b.classList.add("active");
+    verbsBox.appendChild(b);
+  });
+}
+
+function setActiveVerbButton(verb){
+  document.querySelectorAll(".verbBtn").forEach(b => {
+    b.classList.toggle("active", b.textContent === verb);
+  });
+}
+
+function selectCategory(label){
+  currentCategory = label;
+  currentVerb = DATA[label].verbs[0];
+
+  setActiveTab(label);
+  renderVerbButtons(label);
+
+  setActiveVerbButton(currentVerb);
+  renderConjugation(currentVerb, label, DATA[label].type);
+}
+
+function selectVerb(label, verb){
+  currentCategory = label;
+  currentVerb = verb;
+
+  setActiveTab(label);
+  setActiveVerbButton(verb);
+  renderConjugation(verb, label, DATA[label].type);
+}
+
+// Init
+makeTabs();
+selectCategory(currentCategory);
+</script>
+</body>
+</html>
