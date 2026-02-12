@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Countdown — Widget</title>
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --card:#111318;
+      --text:#e8eaf0;
+      --muted:#a9afbf;
+      --stroke:#232633;
+      --stroke2:#2f3344;
+      --accent:#7aa2ff;
+      --accent2:#9bffd1;
+      --danger:#ff7a7a;
+      --radius:14px;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 600px at 40% -10%, rgba(122,162,255,.18), transparent 55%),
+                  radial-gradient(900px 500px at 100% 0%, rgba(155,255,209,.12), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      padding:18px;
+    }
+    .wrap{ max-width: 720px; margin: 0 auto; }
+    .title{
+      display:flex; align-items:baseline; gap:10px;
+      margin: 2px 0 14px;
+    }
+    .title h1{
+      font-size: 18px; margin:0;
+      font-weight: 750; letter-spacing:.2px;
+    }
+    .title .pill{
+      font-size: 12px;
+      padding: 4px 10px;
+      border:1px solid var(--stroke2);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,.03);
+      font-family: var(--mono);
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border:1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .topbar{
+      padding: 12px;
+      border-bottom:1px solid var(--stroke);
+      background: rgba(255,255,255,.02);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .status{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 0;
+    }
+    .dot{
+      width:10px; height:10px;
+      border-radius:999px;
+      border:1px solid var(--stroke2);
+      background: rgba(255,255,255,.04);
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      flex: 0 0 auto;
+    }
+    .dot.running{
+      background: rgba(155,255,209,.18);
+      border-color: rgba(155,255,209,.55);
+      box-shadow: 0 0 22px rgba(155,255,209,.25);
+    }
+    .dot.done{
+      background: rgba(255,122,122,.20);
+      border-color: rgba(255,122,122,.60);
+      box-shadow: 0 0 26px rgba(255,122,122,.25);
+    }
+    .statusText{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btnRow{ display:flex; gap:8px; }
+    button{
+      appearance:none;
+      border:1px solid var(--stroke2);
+      background: rgba(255,255,255,.02);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform .05s ease, border-color .15s ease, background .15s ease, color .15s ease;
+      user-select:none;
+    }
+    button:hover{ border-color: rgba(122,162,255,.55); }
+    button:active{ transform: translateY(1px); }
+    button.primary{
+      border-color: rgba(122,162,255,.75);
+      background: rgba(122,162,255,.10);
+    }
+    button.danger{
+      border-color: rgba(255,122,122,.65);
+      background: rgba(255,122,122,.08);
+    }
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .content{
+      padding: 14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .timerBox{
+      border:1px solid var(--stroke);
+      border-radius: calc(var(--radius) - 4px);
+      background: rgba(255,255,255,.02);
+      padding: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position: relative;
+      overflow:hidden;
+    }
+    .timerGlow{
+      position:absolute;
+      inset:-80px;
+      background: radial-gradient(circle at 50% 50%, rgba(122,162,255,.10), transparent 58%);
+      pointer-events:none;
+      opacity: .9;
+    }
+    .timerGlow.done{
+      background: radial-gradient(circle at 50% 50%, rgba(255,122,122,.11), transparent 58%);
+    }
+    .timeDisplay{
+      position: relative;
+      font-family: var(--mono);
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      line-height: 1;
+      text-shadow: 0 0 18px rgba(122,162,255,.10);
+    }
+    @media (max-width: 480px){
+      .timeDisplay{ font-size: 46px; }
+    }
+
+    .editRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .editRow label{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border:1px solid var(--stroke);
+      border-radius: 12px;
+      background: rgba(255,255,255,.02);
+    }
+    input[type="number"]{
+      width: 76px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border:1px solid var(--stroke2);
+      background: rgba(0,0,0,.15);
+      color: var(--text);
+      font-family: var(--mono);
+      font-weight: 700;
+      outline: none;
+    }
+    input[type="number"]:focus{
+      border-color: rgba(122,162,255,.75);
+      box-shadow: 0 0 0 3px rgba(122,162,255,.12);
+    }
+    input[type="number"]:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .note{
+      text-align:center;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .note code{
+      font-family: var(--mono);
+      background: rgba(255,255,255,.05);
+      padding: 2px 6px;
+      border-radius: 8px;
+      border:1px solid var(--stroke);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">
+      <h1>Countdown</h1>
+      <div class="pill">default 05:00</div>
+    </div>
+
+    <div class="card">
+      <div class="topbar">
+        <div class="status">
+          <div class="dot" id="dot"></div>
+          <div class="statusText" id="statusText">Prêt.</div>
+        </div>
+        <div class="btnRow">
+          <button class="primary" id="playBtn">Play</button>
+          <button class="danger" id="resetBtn">Reset</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="timerBox" id="timerBox">
+          <div class="timerGlow" id="glow"></div>
+          <div class="timeDisplay" id="timeDisplay">05:00</div>
+        </div>
+
+        <div class="editRow">
+          <label>
+            Minutes
+            <input type="number" id="minInput" min="0" max="999" step="1" value="5" />
+          </label>
+          <label>
+            Secondes
+            <input type="number" id="secInput" min="0" max="59" step="1" value="0" />
+          </label>
+        </div>
+
+        <div class="note">
+          Éditable uniquement à l’arrêt. À la fin: bip (audio Web).<br/>
+          Si aucun son: clique <code>Play</code> (les navigateurs bloquent l’audio sans interaction).
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ---- DOM
+  const timeDisplay = document.getElementById("timeDisplay");
+  const playBtn = document.getElementById("playBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const minInput = document.getElementById("minInput");
+  const secInput = document.getElementById("secInput");
+  const statusText = document.getElementById("statusText");
+  const dot = document.getElementById("dot");
+  const glow = document.getElementById("glow");
+
+  // ---- State
+  const DEFAULT_MIN = 5;
+  const DEFAULT_SEC = 0;
+
+  let totalMs = (DEFAULT_MIN * 60 + DEFAULT_SEC) * 1000;
+  let remainingMs = totalMs;
+
+  let running = false;
+  let done = false;
+  let t0 = 0;
+  let rafId = null;
+
+  // ---- Helpers
+  function clampInt(v, min, max){
+    const n = Number.isFinite(v) ? v : parseInt(v, 10);
+    if (!Number.isFinite(n)) return min;
+    return Math.max(min, Math.min(max, Math.trunc(n)));
+  }
+
+  function fmt(ms){
+    ms = Math.max(0, ms);
+    const totalSec = Math.floor(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  }
+
+  function setEditable(enabled){
+    minInput.disabled = !enabled;
+    secInput.disabled = !enabled;
+  }
+
+  function setStatus(text){
+    statusText.textContent = text;
+  }
+
+  function setVisualState(){
+    dot.classList.toggle("running", running);
+    dot.classList.toggle("done", done);
+    glow.classList.toggle("done", done);
+
+    playBtn.textContent = running ? "Running…" : "Play";
+    playBtn.disabled = running; // no pause
+  }
+
+  function applyInputsToTimer(){
+    const m = clampInt(parseInt(minInput.value, 10), 0, 999);
+    const s = clampInt(parseInt(secInput.value, 10), 0, 59);
+    minInput.value = String(m);
+    secInput.value = String(s);
+
+    totalMs = (m * 60 + s) * 1000;
+    remainingMs = totalMs;
+    done = false;
+
+    timeDisplay.textContent = fmt(remainingMs);
+    setStatus("Prêt.");
+    setVisualState();
+  }
+
+  // ---- Sound (Web Audio)
+  // Browsers require a user gesture before audio plays.
+  let audioCtx = null;
+  function ensureAudio(){
+    if (!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === "suspended"){
+      audioCtx.resume().catch(() => {});
+    }
+  }
+  function beep(){
+    if (!audioCtx) return;
+
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, now);
+
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.22, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(now);
+    osc.stop(now + 0.4);
+  }
+
+  // ---- Timer loop
+  function tick(){
+    if (!running) return;
+
+    const elapsed = performance.now() - t0;
+    remainingMs = Math.max(0, totalMs - elapsed);
+    timeDisplay.textContent = fmt(remainingMs);
+
+    if (remainingMs <= 0){
+      running = false;
+      done = true;
+      setEditable(true);
+      setStatus("Terminé.");
+      setVisualState();
+      beep();
+      cancelAnimationFrame(rafId);
+      rafId = null;
+      return;
+    }
+
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function start(){
+    if (running) return;
+    if (totalMs <= 0){
+      setStatus("Temps = 00:00. Ajuste puis Play.");
+      return;
+    }
+
+    ensureAudio(); // unlock audio on user click
+    done = false;
+    running = true;
+    setEditable(false);
+    setStatus("En cours…");
+    setVisualState();
+
+    t0 = performance.now() + (totalMs - remainingMs) * 0; // ensure start from current remaining
+    // We always restart from full when hitting Play (by spec: no pause/play).
+    // So set remaining to total for a clean run:
+    remainingMs = totalMs;
+    t0 = performance.now();
+
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function reset(){
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    running = false;
+    done = false;
+
+    // Reset to input values (not necessarily default),
+    // because user might have edited the time while stopped.
+    applyInputsToTimer();
+    setEditable(true);
+    setVisualState();
+  }
+
+  // ---- Events
+  playBtn.addEventListener("click", start);
+  resetBtn.addEventListener("click", reset);
+
+  function onEdit(){
+    if (running) return;
+    // sanitize and apply immediately when not running
+    applyInputsToTimer();
+  }
+  minInput.addEventListener("change", onEdit);
+  secInput.addEventListener("change", onEdit);
+  minInput.addEventListener("blur", onEdit);
+  secInput.addEventListener("blur", onEdit);
+
+  // ---- Init
+  applyInputsToTimer();
+  setEditable(true);
+  setVisualState();
+})();
+</script>
+</body>
+</html>
